@@ -31,7 +31,7 @@ HTTPS和HTTP协议想必提供了：
 
 使用RSA算法的SSL握手过程是这样的
 
-![](images/2.jpg)
+![](images/5.jpg)
 
 > Source: [Keyless SSL: The Nitty Gritty Technical Details](https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/)
 
@@ -160,4 +160,43 @@ empty state -------------------> pending state ------------------> current state
 
 初始当前状态（Current State）没有指定加密，压缩和MAC算法，因而在完成TLS Handshaking Protocols一系列动作之前，客户端和服务端的数据都是明文传输的；当TLS完成握手过程后，客户端和服务端确定了加密，压缩和MAC算法及其参数，数据（Record）会通过指定算法处理。
 
-未完待续https://cattail.me/tech/2015/11/30/how-https-works.html
+> 其中，Record首先被加密，然后添加MAC（message authentication code）以保证数据完整性
+
+## TLS Handshaking Protocols
+
+Handshakeing protocols包括Alert Protocol，Change Ciper Spec Protocol和Handshake protocol。本文不会详细介绍Alert Protocol和Change Ciper Spec Protocol。
+
+使用RSA算法的握手过程是这样的
+
+![](images/2.jpg)
+
+> Source: [Keyless SSL: The Nitty Gritty Technical Details](https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/)
+
+客户端和服务端在握手hello消息中明文交换了`client_random`和`server_random`，使用RSA公钥加密传输`premaster secret`，最后通过算法，客户端和服务端分别计算`master secret`。其中，不直接使用`premaster secret`的原因是：保证secret的随机性不受任意一方的影响。
+
+除了使用RSA算法在公共信道交换密钥，还可以通过Diddie-Hellman算法。
+Diffie–Hellman算法的原理是这样的
+
+![](images/4.svg)
+
+> By Original schema: A.J. Han Vinck, University of Duisburg-Essen SVG version: Flugaal [Public domain], via Wikimedia Commons
+
+使用Diffie-Hellman算法交换`premaster secret`的流程
+
+![](images/7.jpg)
+
+> Source: [Keyless SSL: The Nitty Gritty Technical Details](https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/)
+
+## 小结
+
+TLS Handshaking Protocols协商了TLS Record Protocol使用的算法和所需参数，并验证了服务端身份；TLS Record Protocol在协商后保证应用层数据的完整性和隐私性。
+
+TLS Handshaking Protocol的核心是在公开信道上传递`premaster secret`。
+
+
+参考链接：
+
+1.	[TLS1.2规范：The Transport Layer Security (TLS) Protocol Version 1.2](https://tools.ietf.org/html/rfc5246)
+2.	[PKI规范：Internet X.509 Public Key Infrastructure ](http://tools.ietf.org/html/rfc5280)Certificate and Certificate Revocation List (CRL) Profile
+3.	[证书和数字签名：What is a Digital Signature?](http://www.youdzone.com/signature.html)
+4.	[TLS Handshake：Keyless SSL: The Nitty Gritty Technical Details](https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/)
